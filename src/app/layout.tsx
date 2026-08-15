@@ -28,7 +28,7 @@ export default function RootLayout({
                   <img 
                     src="/sahyadri-logo.png" 
                     alt="Sahyadri College of Engineering & Management" 
-                    className="h-[60px] md:h-[76px] w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                    className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
                   />
                 </Link>
               </div>
