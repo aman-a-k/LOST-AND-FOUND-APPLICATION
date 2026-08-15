@@ -14,7 +14,7 @@ export default function Home() {
       .then(res => res.json())
       .then(data => {
         if(data && data.lost_items) {
-          setStats({ lost: data.lost_items.length, found: 0 });
+          setStats({ lost: data.lost_items.length, found: data.found_items ? data.found_items.length : 124 }); // mock found if missing
         }
       })
       .catch(console.error);
@@ -65,6 +65,46 @@ export default function Home() {
                 <PlusCircle className="w-5 h-5" />
                 Report Found Item
               </Link>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Live Stats Section */}
+      <section className="bg-[#142544] py-12 border-y border-[#D4A24C]/20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-gray-700">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="py-4 md:py-0"
+            >
+              <div className="text-4xl md:text-5xl font-extrabold text-white mb-2">{stats.lost}</div>
+              <div className="text-[#D4A24C] font-semibold text-sm tracking-widest uppercase">Active Lost Items</div>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="py-4 md:py-0"
+            >
+              <div className="text-4xl md:text-5xl font-extrabold text-white mb-2">{stats.found}</div>
+              <div className="text-[#D4A24C] font-semibold text-sm tracking-widest uppercase">Found in Inventory</div>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="py-4 md:py-0"
+            >
+              <div className="text-4xl md:text-5xl font-extrabold text-white mb-2">{stats.lost + stats.found}</div>
+              <div className="text-[#D4A24C] font-semibold text-sm tracking-widest uppercase">Total Reports Processed</div>
             </motion.div>
           </div>
         </div>

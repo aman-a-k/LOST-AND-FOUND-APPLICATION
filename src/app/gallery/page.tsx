@@ -113,10 +113,16 @@ export default function Gallery() {
                       <MapPin className="w-4 h-4 mr-2 text-[#D4A24C]" />
                       Found at: {item.location || "Unknown location"}
                     </div>
-                    <div className="flex items-center text-sm text-gray-500">
+                    <div className="flex items-center text-sm text-gray-500 mb-4">
                       <Calendar className="w-4 h-4 mr-2 text-[#D4A24C]" />
                       {new Date(item.date_reported).toLocaleDateString()}
                     </div>
+                    <a 
+                      href={`/lost?category=${item.category}`}
+                      className="block w-full text-center py-2.5 mt-4 rounded-lg bg-[#142544]/5 text-[#142544] font-semibold hover:bg-[#142544] hover:text-white transition-colors duration-300"
+                    >
+                      Is this yours? Claim it
+                    </a>
                   </div>
                 </div>
               </motion.div>

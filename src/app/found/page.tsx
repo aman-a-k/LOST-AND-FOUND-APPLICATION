@@ -9,6 +9,7 @@ export default function ReportFound() {
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [email, setEmail] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
   const sendOtp = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -131,7 +132,25 @@ export default function ReportFound() {
           
           <div>
             <label className="block text-sm font-semibold text-[#142544] mb-2">Image (Optional)</label>
-            <input type="file" name="image" accept="image/*" className="corporate-input p-2" />
+            <input 
+              type="file" 
+              name="image" 
+              accept="image/*" 
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  setPreviewUrl(URL.createObjectURL(e.target.files[0]));
+                } else {
+                  setPreviewUrl(null);
+                }
+              }}
+              className="corporate-input p-2" 
+            />
+            {previewUrl && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4">
+                <p className="text-xs text-gray-500 mb-2">Image Preview:</p>
+                <img src={previewUrl} alt="Preview" className="h-32 object-contain rounded-md border border-gray-200" />
+              </motion.div>
+            )}
           </div>
 
           <hr className="border-gray-100 my-6" />
