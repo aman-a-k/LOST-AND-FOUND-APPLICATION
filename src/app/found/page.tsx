@@ -37,9 +37,33 @@ export default function ReportFound() {
     e.preventDefault();
     setLoading(true);
     
-    const formData = new FormData(e.currentTarget);
+    const formElement = e.currentTarget;
+    const formData = new FormData(formElement);
     
     try {
+      const imageFile = formData.get("image") as File;
+      if (imageFile && imageFile.size > 0) {
+        toast.info("Uploading image...");
+        const catboxData = new FormData();
+        catboxData.append("reqtype", "fileupload");
+        catboxData.append("fileToUpload", imageFile);
+        
+        const catboxRes = await fetch("https://catbox.moe/user/api.php", {
+          method: "POST",
+          body: catboxData
+        });
+        
+        if (catboxRes.ok) {
+          const imageUrl = await catboxRes.text();
+          formData.set("image_url", imageUrl);
+        } else {
+          toast.error("Image upload failed, proceeding without image");
+        }
+      }
+      
+      // Remove original file
+      formData.delete("image");
+
       const res = await fetch("/api/items/found", {
         method: "POST",
         body: formData

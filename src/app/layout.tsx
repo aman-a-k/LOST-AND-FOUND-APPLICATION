@@ -33,6 +33,7 @@ export default function RootLayout({
                 </Link>
               </div>
               <div className="flex items-center gap-6">
+                <Link href="/gallery" className="text-sm font-semibold text-[#142544] hover:text-[#D4A24C] transition-colors">Gallery</Link>
                 <Link href="/lost" className="text-sm font-semibold text-[#142544] hover:text-[#D4A24C] transition-colors">Report Lost</Link>
                 <Link href="/found" className="text-sm font-semibold text-[#142544] hover:text-[#D4A24C] transition-colors">Report Found</Link>
                 <Link href="/login" className="btn-primary text-sm py-2 px-5 rounded-full inline-flex items-center gap-2">

@@ -37,9 +37,34 @@ export default function ReportLost() {
     e.preventDefault();
     setLoading(true);
     
-    const formData = new FormData(e.currentTarget);
+    const formElement = e.currentTarget;
+    const formData = new FormData(formElement);
     
     try {
+      const imageFile = formData.get("image") as File;
+      if (imageFile && imageFile.size > 0) {
+        toast.info("Uploading image...");
+        const catboxData = new FormData();
+        catboxData.append("reqtype", "fileupload");
+        catboxData.append("fileToUpload", imageFile);
+        
+        // We use a CORS proxy or route? Wait, catbox has permissive CORS.
+        const catboxRes = await fetch("https://catbox.moe/user/api.php", {
+          method: "POST",
+          body: catboxData
+        });
+        
+        if (catboxRes.ok) {
+          const imageUrl = await catboxRes.text();
+          formData.set("image_url", imageUrl);
+        } else {
+          toast.error("Image upload failed, proceeding without image");
+        }
+      }
+      
+      // Remove the original file to avoid sending it to our API
+      formData.delete("image");
+
       const res = await fetch("/api/items/lost", {
         method: "POST",
         body: formData
@@ -47,8 +72,13 @@ export default function ReportLost() {
       
       const data = await res.json();
       if (data.success) {
-        toast.success("Lost item reported successfully!");
-        setTimeout(() => window.location.href = "/", 1500);
+        // Show AI Match Results if any
+        if (data.matches && data.matches.length > 0) {
+          toast.success(`Lost item reported! We found ${data.matches.length} potential matches in our system!`, { duration: 6000 });
+        } else {
+          toast.success("Lost item reported successfully!");
+        }
+        setTimeout(() => window.location.href = "/", 2000);
       } else {
         toast.error(data.message || "Failed to report item");
       }

@@ -44,7 +44,9 @@ def report_lost_item():
         status='lost',
     )
     
-    if 'image' in request.files:
+    if request.form.get('image_url'):
+        item.image_path = request.form.get('image_url')
+    elif 'image' in request.files:
         file = request.files['image']
         if file.filename:
             filename = secure_filename(file.filename)
@@ -58,12 +60,22 @@ def report_lost_item():
     db.session.add(item)
     db.session.commit()
     
+    # Try to find matches
+    matches = []
+    matching_found_items = Item.query.filter_by(status='found', category=category).all()
+    for found_item in matching_found_items:
+        # Basic text similarity check (if word matches in description or name)
+        if (name.lower() in found_item.name.lower() or 
+            (description and found_item.description and 
+             any(word in found_item.description.lower() for word in description.lower().split() if len(word) > 4))):
+            matches.append(found_item.to_dict())
+    
     try:
         send_admin_lost_item_notification(item, item)
     except Exception:
         pass
     
-    return jsonify({'success': True, 'message': 'Lost item reported successfully', 'item': item.to_dict()})
+    return jsonify({'success': True, 'message': 'Lost item reported successfully', 'item': item.to_dict(), 'matches': matches})
 
 @bp.route('/api/items/found', methods=['POST'])
 def report_found_item():
@@ -88,7 +100,9 @@ def report_found_item():
         status='found',
     )
     
-    if 'image' in request.files:
+    if request.form.get('image_url'):
+        item.image_path = request.form.get('image_url')
+    elif 'image' in request.files:
         file = request.files['image']
         if file.filename:
             filename = secure_filename(file.filename)
@@ -104,7 +118,7 @@ def report_found_item():
     
     matching_items = Item.query.filter_by(status='lost', category=category).all()
     for lost_item in matching_items:
-        owner = User.query.get(lost_item.owner_id)
+        owner = User.query.get(lost_item.owner_id) if lost_item.owner_id else None
         if owner:
             try:
                 send_item_match_notification(owner, item)
