@@ -26,7 +26,7 @@ export default function RootLayout({
               <div className="flex items-center flex-shrink-0">
                 <Link href="/" className="flex items-center group py-1">
                   <img 
-                    src="https://sahyadri-placement-portal.vercel.app/sahyadri-logo-header.png" 
+                    src="/sahyadri-logo.png" 
                     alt="Sahyadri College of Engineering & Management" 
                     className="h-[60px] md:h-[76px] w-auto object-contain transition-transform duration-300 group-hover:scale-105"
                   />
