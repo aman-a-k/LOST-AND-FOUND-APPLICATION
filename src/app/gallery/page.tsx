@@ -88,12 +88,12 @@ export default function Gallery() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                className="corporate-card overflow-hidden flex flex-col hover:-translate-y-1"
+                className="corporate-card overflow-hidden flex flex-col group"
               >
                 {/* Image Placeholder / Display */}
-                <div className="h-48 bg-gray-100 flex items-center justify-center border-b border-gray-100 relative overflow-hidden">
+                <div className="h-56 bg-gray-100 flex items-center justify-center border-b border-gray-100 relative overflow-hidden">
                   {item.image_path && item.image_path.startsWith('http') ? (
-                    <img src={item.image_path} alt={item.name} className="w-full h-full object-cover" />
+                    <img src={item.image_path} alt={item.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                   ) : (
                     <div className="text-center text-gray-400">
                       <ImageIcon className="w-10 h-10 mx-auto mb-2 opacity-50" />

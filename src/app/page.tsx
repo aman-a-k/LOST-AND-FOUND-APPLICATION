@@ -22,31 +22,38 @@ export default function Home() {
 
   return (
     <div className="bg-[#F5F5F5] min-h-[calc(100vh-6rem)]">
-      {/* Hero Section */}
-      <section className="bg-white border-b border-gray-100 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#142544]/5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#D4A24C]/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+      {/* Premium Hero Section */}
+      <section className="bg-[#fafafa] relative overflow-hidden min-h-[85vh] flex items-center">
+        {/* Animated Gradient Mesh Background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-[20%] -right-[10%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-br from-[#142544]/10 to-transparent blur-3xl opacity-60 mix-blend-multiply animate-pulse" style={{ animationDuration: '8s' }}></div>
+          <div className="absolute -bottom-[20%] -left-[10%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tr from-[#D4A24C]/15 to-transparent blur-3xl opacity-60 mix-blend-multiply animate-pulse" style={{ animationDuration: '10s', animationDelay: '1s' }}></div>
+          <div className="absolute top-[20%] left-[20%] w-[40vw] h-[40vw] rounded-full bg-gradient-to-br from-blue-400/5 to-transparent blur-3xl opacity-50 mix-blend-multiply"></div>
+        </div>
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 relative">
-          <div className="text-center max-w-3xl mx-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full py-20">
+          <div className="text-center max-w-4xl mx-auto">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             >
-              <span className="text-[#D4A24C] text-xs font-bold tracking-[0.2em] uppercase mb-4 block">
+              <span className="inline-block py-1.5 px-4 rounded-full bg-white border border-gray-200 text-[#D4A24C] text-xs font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
                 Sahyadri Student Services
               </span>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#142544] tracking-tight mb-6 leading-tight">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-[#0f172a] tracking-tight mb-6 leading-[1.1]">
                 Campus Lost & Found <br />
-                <span className="text-[#D4A24C]">Management System</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#142544] via-[#1e3a6a] to-[#D4A24C]">
+                  Management System
+                </span>
               </h1>
             </motion.div>
             
             <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="text-lg text-gray-500 mb-10 max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              className="text-lg md:text-xl text-gray-500 mb-12 max-w-2xl mx-auto font-medium"
             >
               The official centralized platform for Sahyadri College to report, track, and recover your misplaced belongings securely and efficiently.
             </motion.p>
@@ -54,14 +61,14 @@ export default function Home() {
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center"
+              transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col sm:flex-row gap-5 justify-center items-center"
             >
-              <Link href="/lost" className="btn-primary flex items-center justify-center gap-2 text-base px-8 py-3.5 rounded-full">
+              <Link href="/lost" className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2 text-base px-10 py-4 shadow-xl shadow-[#142544]/20 hover:shadow-2xl hover:shadow-[#142544]/30">
                 <Search className="w-5 h-5" />
                 Report Lost Item
               </Link>
-              <Link href="/found" className="btn-outline flex items-center justify-center gap-2 text-base px-8 py-3.5 rounded-full">
+              <Link href="/found" className="btn-secondary w-full sm:w-auto flex items-center justify-center gap-2 text-base px-10 py-4 shadow-xl shadow-[#D4A24C]/20 hover:shadow-2xl hover:shadow-[#D4A24C]/30 bg-white">
                 <PlusCircle className="w-5 h-5" />
                 Report Found Item
               </Link>
