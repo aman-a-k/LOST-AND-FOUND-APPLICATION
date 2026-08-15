@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-4 mb-4">Welcome to Sahyadri Lost & Found</h1>
+    <p class="lead mb-5">A simple and efficient way to report and find lost items on campus</p>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Lost Something?</h5>
+                    <p class="card-text">Report your lost item and we'll help you find it.</p>
+                    <a href="{{ url_for('main.lost_item') }}" class="btn btn-danger btn-lg w-100">
+                        Report Lost Item
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Found Something?</h5>
+                    <p class="card-text">Help others by reporting items you've found.</p>
+                    <a href="{{ url_for('main.found_item') }}" class="btn btn-success btn-lg w-100">
+                        Report Found Item
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <h2 class="h3 mb-4">Recent Lost Items</h2>
+        <div class="row">
+            {% for item in lost_items[:3] %}
+            <div class="col-md-4">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item.name }}</h5>
+                        <p class="card-text">
+                            <small class="text-muted">Category: {{ item.category }}</small><br>
+                            <small class="text-muted">Location: {{ item.location }}</small><br>
+                            <small class="text-muted">Date: {{ item.date_lost.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </p>
+                        <form method="POST" action="{{ url_for('main.resolve_item', item_id=item.id) }}" class="d-flex align-items-center">
+                            <input type="email" name="email" class="form-control me-2" placeholder="Your email (for OTP)" required style="max-width: 180px;">
+                            <button type="submit" class="btn btn-outline-success btn-sm">Got It</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="mt-3 text-end">
+            <a href="{{ url_for('main.resolved_items') }}" class="btn btn-link">View Resolved Items</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

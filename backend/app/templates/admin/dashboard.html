@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="mb-4">Admin Dashboard</h2>
+            
+            <!-- Filter and Search Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="all" {% if current_filters.status == 'all' %}selected{% endif %}>All</option>
+                                <option value="lost" {% if current_filters.status == 'lost' %}selected{% endif %}>Lost</option>
+                                <option value="found" {% if current_filters.status == 'found' %}selected{% endif %}>Found</option>
+                                <option value="returned" {% if current_filters.status == 'returned' %}selected{% endif %}>Returned</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">From Date</label>
+                            <input type="date" name="date_from" class="form-control" value="{{ current_filters.date_from }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">To Date</label>
+                            <input type="date" name="date_to" class="form-control" value="{{ current_filters.date_to }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Search</label>
+                            <input type="text" name="search" class="form-control" value="{{ current_filters.search }}" placeholder="Search items...">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                            <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-secondary">Clear Filters</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Lost Items</h5>
+                            <h2 class="mb-0">{{ stats.total_lost }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Found Items</h5>
+                            <h2 class="mb-0">{{ stats.total_found }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Items Returned</h5>
+                            <h2 class="mb-0">{{ stats.total_returned }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-secondary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Users</h5>
+                            <h2 class="mb-0">{{ stats.total_users }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Download Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Generate Reports</h4>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('main.download_report') }}" method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="report-type" class="form-label">Report Type</label>
+                    <select class="form-select" id="report-type" name="type">
+                        <option value="all">All Items</option>
+                        <option value="lost">Lost Items Only</option>
+                        <option value="found">Found Items Only</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="start-date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="start-date" name="start_date">
+                </div>
+                <div class="col-md-3">
+                    <label for="end-date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="end-date" name="end_date">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">Download Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recent Items -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Recent Items</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Date Reported</th>
+                            <th>Location</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in stats.recent_items %}
+                        <tr>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.category }}</td>
+                            <td>
+                                <span class="badge {% if item.status == 'lost' %}bg-danger{% else %}bg-success{% endif %}">
+                                    {{ item.status }}
+                                </span>
+                            </td>
+                            <td>{{ item.date_reported.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ item.location }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="viewDetails({{ item.id }})">View Details</button>
+                                {% if item.status != 'returned' %}
+                                <button class="btn btn-sm btn-success" onclick="markReturned({{ item.id }})">Mark Returned</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Users Section -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Recent Users</h4>
+            <a href="{{ url_for('main.admin_users') }}" class="btn btn-sm btn-primary">Manage Users</a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Department</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in stats.users %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="badge {% if user.role == 'admin' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                    {{ user.role }}
+                                </span>
+                            </td>
+                            <td>{{ user.department }}</td>
+                            <td>{{ user.date_joined.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" 
+                                        onclick="toggleUserRole({{ user.id }}, this)"
+                                        {% if user.id == current_user.id %}disabled{% endif %}>
+                                    Toggle Role
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Item Details Modal -->
+<div class="modal fade" id="itemDetailsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Item Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="itemDetails"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewDetails(itemId) {
+    fetch(`/api/items/${itemId}`)
+        .then(response => response.json())
+        .then(data => {
+            const details = document.getElementById('itemDetails');
+            details.innerHTML = `
+                <p><strong>Name:</strong> ${data.name}</p>
+                <p><strong>Category:</strong> ${data.category}</p>
+                <p><strong>Description:</strong> ${data.description}</p>
+                <p><strong>Location:</strong> ${data.location}</p>
+                <p><strong>Status:</strong> ${data.status}</p>
+                <p><strong>Date Reported:</strong> ${new Date(data.date_reported).toLocaleString()}</p>
+                ${data.image_path ? `<img src="/static/uploads/${data.image_path}" class="img-fluid">` : ''}
+            `;
+            new bootstrap.Modal(document.getElementById('itemDetailsModal')).show();
+        });
+}
+
+function markReturned(itemId) {
+    if (confirm('Are you sure you want to mark this item as returned?')) {
+        fetch(`/api/items/${itemId}/return`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+}
+
+// Add to existing scripts
+function toggleUserRole(userId, button) {
+    if (confirm('Are you sure you want to change this user\'s role?')) {
+        fetch(`/admin/user/${userId}/toggle-role`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+}
+
+// Set default dates for report download
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+    
+    document.getElementById('start-date').value = thirtyDaysAgo.toISOString().split('T')[0];
+    document.getElementById('end-date').value = today.toISOString().split('T')[0];
+});
+</script>
+{% endblock %}

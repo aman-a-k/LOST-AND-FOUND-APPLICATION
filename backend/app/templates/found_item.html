@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Report Found Item{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Report a Found Item</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data" id="foundItemForm">
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category*</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Select a category</option>
+                                <option value="mobile">Mobile Phone</option>
+                                <option value="laptop">Laptop</option>
+                                <option value="wallet">Wallet</option>
+                                <option value="id_card">ID Card</option>
+                                <option value="bag">Bag</option>
+                                <option value="keys">Keys</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Item Name*</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description*</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required
+                                placeholder="Please provide detailed description including color, brand, identifying marks, etc. This will help the owner identify their item."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Found Location*</label>
+                            <input type="text" class="form-control" id="location" name="location" required
+                                placeholder="e.g., Library, Cafeteria, Lab 201">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="date_found" class="form-label">Date & Time Found*</label>
+                            <input type="datetime-local" class="form-control" id="date_found" name="date_found" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Upload Image (optional)</label>
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                            <small class="text-muted">Upload an image to help the owner identify their item. Please do not include sensitive information in the image.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="current_location" class="form-label">Current Item Location*</label>
+                            <select class="form-select" id="current_location" name="current_location" required>
+                                <option value="">Select where the item is currently kept</option>
+                                <option value="lost_found_office">Lost & Found Office</option>
+                                <option value="security">Security Office</option>
+                                <option value="department">Department Office</option>
+                                <option value="library">Library</option>
+                                <option value="other">Other (specify in description)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="identifying_question" name="identifying_question" value="yes">
+                            <label class="form-check-label" for="identifying_question">
+                                I have a question that only the true owner can answer
+                            </label>
+                        </div>
+
+                        <div id="question_field" class="mb-3 d-none">
+                            <label for="verification_question" class="form-label">Verification Question</label>
+                            <input type="text" class="form-control" id="verification_question" name="verification_question"
+                                placeholder="e.g., What's the wallpaper on the phone? What items are in the wallet?">
+                            <small class="text-muted">This question will be used to verify the true owner.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Your Email*</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3 d-flex align-items-center">
+                            <input type="text" class="form-control me-2" id="otp" name="otp" placeholder="Enter OTP" required style="max-width: 200px;">
+                            <button type="button" class="btn btn-outline-secondary" id="sendOtpBtn">Send OTP</button>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success btn-lg px-5" id="submitBtn" disabled>Submit Found Item</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('identifying_question').addEventListener('change', function() {
+    const questionField = document.getElementById('question_field');
+    if (this.checked) {
+        questionField.classList.remove('d-none');
+        document.getElementById('verification_question').required = true;
+    } else {
+        questionField.classList.add('d-none');
+        document.getElementById('verification_question').required = false;
+    }
+});
+
+const sendOtpBtn = document.getElementById('sendOtpBtn');
+const emailInput = document.getElementById('email');
+const otpInput = document.getElementById('otp');
+const submitBtn = document.getElementById('submitBtn');
+
+sendOtpBtn.addEventListener('click', function() {
+    const email = emailInput.value;
+    if (!email) {
+        alert('Please enter your email first.');
+        return;
+    }
+    sendOtpBtn.disabled = true;
+    fetch('/found-item/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'email=' + encodeURIComponent(email)
+    }).then(res => res.json()).then(data => {
+        if (data.success) {
+            alert('OTP sent to your email.');
+            otpInput.disabled = false;
+            submitBtn.disabled = false;
+        } else {
+            alert('Failed to send OTP.');
+            sendOtpBtn.disabled = false;
+        }
+    }).catch(() => {
+        alert('Error sending OTP.');
+        sendOtpBtn.disabled = false;
+    });
+});
+</script>
+{% endblock %}

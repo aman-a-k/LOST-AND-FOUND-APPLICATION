@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Lost & Found Dashboard</h1>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card dashboard-stats">
+                <div class="card-body">
+                    <h5 class="card-title">Lost Items</h5>
+                    <p class="stats-number">{{ lost_items|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-stats">
+                <div class="card-body">
+                    <h5 class="card-title">Found Items</h5>
+                    <p class="stats-number">{{ found_items|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-stats">
+                <div class="card-body">
+                    <h5 class="card-title">Returned Today</h5>
+                    <p class="stats-number">{{ returned_today }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card dashboard-stats">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Claims</h5>
+                    <p class="stats-number">{{ pending_claims }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Tables -->
+    <div class="row">
+        <!-- Lost Items Table -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Lost Items</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Category</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in lost_items %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.category }}</td>
+                                    <td>{{ item.date_lost.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'warning' if item.status == 'lost' else 'success' }}">
+                                            {{ item.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" onclick="viewItem({{ item.id }})">
+                                            View
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Found Items Table -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Found Items</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Category</th>
+                                    <th>Date</th>
+                                    <th>Location</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in found_items %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.category }}</td>
+                                    <td>{{ item.date_found.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ item.current_location }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" onclick="viewItem({{ item.id }})">
+                                            View
+                                        </button>
+                                        <button class="btn btn-sm btn-success" onclick="markReturned({{ item.id }})">
+                                            Return
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Item Details Modal -->
+<div class="modal fade" id="itemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Item Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="itemDetails">
+                    <!-- Filled dynamically -->
+                </div>
+                {% if item.image_path %}
+                <img src="{{ url_for('static', filename='uploads/' + item.image_path) }}" 
+                     class="img-fluid mt-3" alt="Item image">
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function viewItem(itemId) {
+    try {
+        const response = await fetch(`/api/items/${itemId}`);
+        const item = await response.json();
+        
+        const details = document.getElementById('itemDetails');
+        details.innerHTML = `
+            <p><strong>Name:</strong> ${item.name}</p>
+            <p><strong>Category:</strong> ${item.category}</p>
+            <p><strong>Description:</strong> ${item.description}</p>
+            <p><strong>Location:</strong> ${item.location}</p>
+            <p><strong>Date Reported:</strong> ${new Date(item.date_reported).toLocaleDateString()}</p>
+            <p><strong>Status:</strong> ${item.status}</p>
+        `;
+        
+        const modal = new bootstrap.Modal(document.getElementById('itemModal'));
+        modal.show();
+    } catch (error) {
+        console.error('Error fetching item details:', error);
+        alert('Error loading item details');
+    }
+}
+
+async function markReturned(itemId) {
+    if (!confirm('Are you sure this item has been returned to its owner?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/items/${itemId}/return`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            throw new Error('Failed to mark item as returned');
+        }
+    } catch (error) {
+        console.error('Error marking item as returned:', error);
+        alert('Error marking item as returned');
+    }
+}
+</script>
+{% endblock %}

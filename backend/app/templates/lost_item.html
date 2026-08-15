@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Report Lost Item{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Report a Lost Item</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data" id="lostItemForm">
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category*</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Select a category</option>
+                                <option value="mobile">Mobile Phone</option>
+                                <option value="laptop">Laptop</option>
+                                <option value="wallet">Wallet</option>
+                                <option value="id_card">ID Card</option>
+                                <option value="bag">Bag</option>
+                                <option value="keys">Keys</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Item Name*</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description*</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required
+                                placeholder="Please provide detailed description including color, brand, identifying marks, etc."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Last Seen Location*</label>
+                            <input type="text" class="form-control" id="location" name="location" required
+                                placeholder="e.g., Library, Cafeteria, Lab 201">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="date_lost" class="form-label">Date & Time Lost*</label>
+                            <input type="datetime-local" class="form-control" id="date_lost" name="date_lost" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Upload Image (optional)</label>
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                            <small class="text-muted">Upload an image of your item to help others identify it.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Your Email*</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3 d-flex align-items-center">
+                            <input type="text" class="form-control me-2" id="otp" name="otp" placeholder="Enter OTP" required style="max-width: 200px;">
+                            <button type="button" class="btn btn-outline-secondary" id="sendOtpBtn">Send OTP</button>
+                        </div>
+
+                        <!-- Dynamic fields for specific categories -->
+                        <div id="mobile_fields" class="category-specific-fields d-none">
+                            <div class="mb-3">
+                                <label for="brand" class="form-label">Brand</label>
+                                <input type="text" class="form-control" id="brand" name="brand">
+                            </div>
+                            <div class="mb-3">
+                                <label for="model" class="form-label">Model</label>
+                                <input type="text" class="form-control" id="model" name="model">
+                            </div>
+                            <div class="mb-3">
+                                <label for="imei" class="form-label">IMEI Number</label>
+                                <input type="text" class="form-control" id="imei" name="imei">
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5" id="submitBtn" disabled>Submit Report</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('category').addEventListener('change', function() {
+    const mobileFields = document.getElementById('mobile_fields');
+    if (this.value === 'mobile') {
+        mobileFields.classList.remove('d-none');
+    } else {
+        mobileFields.classList.add('d-none');
+    }
+});
+
+const sendOtpBtn = document.getElementById('sendOtpBtn');
+const emailInput = document.getElementById('email');
+const otpInput = document.getElementById('otp');
+const submitBtn = document.getElementById('submitBtn');
+
+sendOtpBtn.addEventListener('click', function() {
+    const email = emailInput.value;
+    if (!email) {
+        alert('Please enter your email first.');
+        return;
+    }
+    sendOtpBtn.disabled = true;
+    fetch('/lost-item/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'email=' + encodeURIComponent(email)
+    }).then(res => res.json()).then(data => {
+        if (data.success) {
+            alert('OTP sent to your email.');
+            otpInput.disabled = false;
+            submitBtn.disabled = false;
+        } else {
+            alert('Failed to send OTP.');
+            sendOtpBtn.disabled = false;
+        }
+    }).catch(() => {
+        alert('Error sending OTP.');
+        sendOtpBtn.disabled = false;
+    });
+});
+</script>
+{% endblock %}
