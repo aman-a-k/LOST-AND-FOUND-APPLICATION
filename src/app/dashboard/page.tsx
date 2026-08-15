@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Search, PlusCircle, CheckCircle, Package, LogOut } from "lucide-react";
+import { Search, PlusCircle, CheckCircle, Package, LogOut, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Dashboard() {
@@ -34,12 +34,28 @@ export default function Dashboard() {
 
   const handleReturn = async (itemId: number) => {
     try {
-      const res = await fetch(`/api/admin/return/${itemId}`, { method: "POST" });
+      const res = await fetch(`/api/items/${itemId}/return`, { method: "POST" });
       if (res.ok) {
         toast.success("Item marked as returned successfully");
         fetchData(); // Refresh data
       } else {
         toast.error("Failed to mark item as returned");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("An error occurred");
+    }
+  };
+
+  const handleDelete = async (itemId: number) => {
+    if (!confirm("Are you sure you want to delete this item? This action cannot be undone.")) return;
+    try {
+      const res = await fetch(`/api/items/${itemId}`, { method: "DELETE" });
+      if (res.ok) {
+        toast.success("Item deleted successfully");
+        fetchData(); // Refresh data
+      } else {
+        toast.error("Failed to delete item");
       }
     } catch (err) {
       console.error(err);
@@ -79,13 +95,23 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-[#142544]">Admin Dashboard</h1>
           <p className="text-gray-500 mt-1">Manage all reported lost and found items across the campus.</p>
         </div>
-        <button 
-          onClick={handleLogout}
-          className="btn-outline flex items-center px-4 py-2 text-sm"
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Logout
-        </button>
+        <div className="flex gap-4">
+          <a 
+            href="/api/admin/export"
+            download
+            className="btn-secondary flex items-center px-4 py-2 text-sm bg-white"
+          >
+            <Download className="w-4 h-4 mr-2 text-[#142544]" />
+            Export CSV
+          </a>
+          <button 
+            onClick={handleLogout}
+            className="btn-outline flex items-center px-4 py-2 text-sm"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
+          </button>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -165,7 +191,7 @@ export default function Dashboard() {
                         {item.status.toUpperCase()}
                       </span>
                     </td>
-                    <td className="py-4 text-right">
+                    <td className="py-4 text-right flex justify-end gap-2 items-center">
                       {item.status === 'lost' && (
                         <button 
                           onClick={() => handleReturn(item.id)}
@@ -174,6 +200,13 @@ export default function Dashboard() {
                           Mark Returned
                         </button>
                       )}
+                      <button 
+                        onClick={() => handleDelete(item.id)}
+                        className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                        title="Delete Item"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -198,15 +231,26 @@ export default function Dashboard() {
                 <tr className="border-b border-gray-200">
                   <th className="pb-3 text-sm font-semibold text-gray-500">Item Name</th>
                   <th className="pb-3 text-sm font-semibold text-gray-500">Location Found</th>
-                  <th className="pb-3 text-sm font-semibold text-gray-500">Finder Email</th>
+                  <th className="pb-3 text-sm font-semibold text-gray-500 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {data.found_items?.map((item: any) => (
                   <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="py-4 font-medium text-[#142544]">{item.name}</td>
+                    <td className="py-4">
+                      <div className="font-medium text-[#142544]">{item.name}</div>
+                      <div className="text-xs text-gray-500">{item.email || "No email provided"}</div>
+                    </td>
                     <td className="py-4 text-sm text-gray-600">{item.location}</td>
-                    <td className="py-4 text-sm text-gray-500">{item.email}</td>
+                    <td className="py-4 text-right">
+                      <button 
+                        onClick={() => handleDelete(item.id)}
+                        className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                        title="Delete Item"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {data.found_items?.length === 0 && (

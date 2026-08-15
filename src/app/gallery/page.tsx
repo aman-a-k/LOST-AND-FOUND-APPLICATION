@@ -8,6 +8,8 @@ import { toast } from "sonner";
 export default function Gallery() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
 
   useEffect(() => {
     fetch("/api/items?status=found")
@@ -24,30 +26,63 @@ export default function Gallery() {
       .finally(() => setLoading(false));
   }, []);
 
+  const filteredItems = items.filter((item: any) => {
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesCategory = categoryFilter === "all" || item.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
   return (
     <div className="bg-[#F5F5F5] min-h-[calc(100vh-6rem)] py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <span className="text-[#D4A24C] text-xs font-bold tracking-[0.2em] uppercase">Public Inventory</span>
           <h1 className="text-3xl md:text-4xl font-bold text-[#142544] mt-3">Recently Found Items</h1>
           <p className="text-gray-500 mt-4 max-w-2xl mx-auto">
-            Browse items that have been turned in across the Sahyadri campus. If you see your lost item here, please contact administration or file a Lost Report matching this category to begin the claim process.
+            Browse items that have been turned in across the Sahyadri campus.
           </p>
+        </div>
+
+        {/* Search and Filter Controls */}
+        <div className="mb-10 max-w-3xl mx-auto flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input 
+              type="text" 
+              placeholder="Search by item name or description..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="corporate-input pl-10 w-full"
+            />
+          </div>
+          <select 
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="corporate-input sm:w-48"
+          >
+            <option value="all">All Categories</option>
+            <option value="electronics">Electronics</option>
+            <option value="clothing">Clothing</option>
+            <option value="accessories">Accessories</option>
+            <option value="documents">Documents</option>
+            <option value="other">Other</option>
+          </select>
         </div>
 
         {loading ? (
           <div className="flex justify-center py-20">
             <Search className="w-10 h-10 text-[#142544] animate-pulse" />
           </div>
-        ) : items.length === 0 ? (
-          <div className="corporate-card p-12 text-center">
+        ) : filteredItems.length === 0 ? (
+          <div className="corporate-card p-12 text-center max-w-2xl mx-auto">
             <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700">No found items right now</h3>
-            <p className="text-gray-500 mt-2">Check back later or report a lost item.</p>
+            <h3 className="text-xl font-semibold text-gray-700">No items found</h3>
+            <p className="text-gray-500 mt-2">Try adjusting your search filters.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {items.map((item: any, idx) => (
+            {filteredItems.map((item: any, idx) => (
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0, y: 20 }}

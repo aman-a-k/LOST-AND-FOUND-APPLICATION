@@ -5,6 +5,7 @@ from werkzeug.utils import secure_filename
 import os
 import csv
 import io
+import dateutil.parser
 from ..models.item import Item
 from ..models.user import User
 from .. import db
@@ -33,8 +34,12 @@ def report_lost_item():
     category = request.form.get('category')
     description = request.form.get('description')
     location = request.form.get('location')
-    date_lost = datetime.strptime(request.form.get('date_lost'), '%Y-%m-%dT%H:%M') if request.form.get('date_lost') else datetime.utcnow()
     
+    try:
+        date_lost = dateutil.parser.parse(request.form.get('date_lost')) if request.form.get('date_lost') else datetime.utcnow()
+    except Exception:
+        date_lost = datetime.utcnow()
+        
     item = Item(
         name=name,
         category=category,
@@ -89,8 +94,12 @@ def report_found_item():
     category = request.form.get('category')
     description = request.form.get('description')
     location = request.form.get('location')
-    date_found = datetime.strptime(request.form.get('date_found'), '%Y-%m-%dT%H:%M') if request.form.get('date_found') else datetime.utcnow()
     
+    try:
+        date_found = dateutil.parser.parse(request.form.get('date_found')) if request.form.get('date_found') else datetime.utcnow()
+    except Exception:
+        date_found = datetime.utcnow()
+        
     item = Item(
         name=name,
         category=category,
@@ -177,6 +186,57 @@ def mark_item_returned(item_id):
     item.date_claimed = datetime.utcnow()
     db.session.commit()
     return jsonify({'success': True, 'message': f'Item {item.name} marked as returned'})
+
+@bp.route('/api/items/<int:item_id>', methods=['DELETE'])
+@login_required
+def delete_item(item_id):
+    if current_user.role not in ['admin', 'faculty']:
+        return jsonify({'success': False, 'error': 'Permission denied'}), 403
+        
+    item = Item.query.get_or_404(item_id)
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify({'success': True, 'message': f'Item {item.name} deleted successfully'})
+
+@bp.route('/api/admin/export', methods=['GET'])
+@login_required
+def export_csv():
+    if current_user.role not in ['admin', 'faculty']:
+        return jsonify({'success': False, 'error': 'Permission denied'}), 403
+        
+    items = Item.query.order_by(Item.date_reported.desc()).all()
+    
+    # Create CSV in memory
+    si = io.StringIO()
+    cw = csv.writer(si)
+    cw.writerow(['ID', 'Name', 'Category', 'Status', 'Location', 'Date Reported', 'Owner Email', 'Image URL'])
+    
+    for item in items:
+        owner_email = "Unknown"
+        if item.owner_id:
+            user = User.query.get(item.owner_id)
+            if user:
+                owner_email = user.email
+                
+        cw.writerow([
+            item.id,
+            item.name,
+            item.category,
+            item.status,
+            item.location,
+            item.date_reported.isoformat() if item.date_reported else "",
+            owner_email,
+            item.image_path if item.image_path else ""
+        ])
+        
+    output = si.getvalue()
+    si.close()
+    
+    return current_app.response_class(
+        output,
+        mimetype='text/csv',
+        headers={"Content-Disposition": "attachment;filename=lost_and_found_export.csv"}
+    )
 
 @bp.route('/api/otp/send', methods=['POST'])
 def send_otp():
